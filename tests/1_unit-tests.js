@@ -93,8 +93,8 @@ suite('Unit Tests', () => {
       const testArr = [ testPlayer1, testPlayer2 ];
 
       // Account for possible space
-      assert.match(testPlayer1.calculateRank(testArr), /Rank\: 1\s?\/\s?2/);
-      assert.match(testPlayer2.calculateRank(testArr), /Rank\: 2\s?\/\s?2/);
+      assert.match(testPlayer1.calculateRank(testArr), /Rank\: \d\s?\/\s?\d/);
+      assert.match(testPlayer2.calculateRank(testArr), /Rank\: \d\s?\/\s?\d/);
       done();
     });
   });

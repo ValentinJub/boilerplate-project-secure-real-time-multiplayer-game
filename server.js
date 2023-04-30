@@ -4,13 +4,22 @@ const bodyParser = require('body-parser');
 const expect = require('chai');
 const socket = require('socket.io');
 const cors = require('cors');
+const helmet = require('helmet');
 
 const fccTestingRoutes = require('./routes/fcctesting.js');
 const runner = require('./test-runner.js');
 
 const app = express();
 
-app.use('/public', express.static(process.cwd() + '/public'));
+app.use(helmet({
+  noSniff: true,
+  xssFilter: true,
+  hidePoweredBy: {
+    setTo: 'PHP 7.4.3'
+  },
+  noCache: true
+}));
+
 app.use('/assets', express.static(process.cwd() + '/assets'));
 
 app.use(bodyParser.json());
