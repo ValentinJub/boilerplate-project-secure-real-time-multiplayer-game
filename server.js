@@ -20,7 +20,7 @@ app.use(helmet({
   noCache: true
 }));
 
-app.use('/assets', express.static(process.cwd() + '/assets'));
+app.use('/public', express.static(process.cwd() + '/public'));
 
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -61,5 +61,47 @@ const server = app.listen(portNum, () => {
     }, 1500);
   }
 });
+
+const io = require('socket.io')(server);
+const { createGameState, gameLoop, getUpdatedVelocity } = require('./game.js');
+const { FRAMERATE } = require('./public/constants.js');
+
+io.on('connection', (client) => {
+  const state = createGameState();
+  client.on('keydown', handleKeydown);
+
+  function handleKeydown(keyCode) {
+    try {
+      keyCode = parseInt(keyCode);
+    } catch (error) {
+      console.log(error)
+      return;
+    }
+
+    const vel = getUpdatedVelocity(keyCode);
+
+    if(vel) {
+      state.player.vel = vel;
+    }
+  }
+
+  startGameInterval(client, state);
+});
+
+function startGameInterval(client, state) {
+  const intervalId = setInterval(() => {
+    let lastFrameTime = performance.now();
+    const winner = gameLoop(state); 
+    
+
+    if(!winner) {
+      client.emit('gameState', JSON.stringify(state));
+    } else {
+      client.emit('gameOver');
+      clearInterval(intervalId);
+    }
+  }, 2000 / FRAMERATE)
+}
+
 
 module.exports = app; // For testing
