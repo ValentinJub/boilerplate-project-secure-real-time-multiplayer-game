@@ -2,7 +2,6 @@ require('dotenv').config();
 const express = require('express');
 const bodyParser = require('body-parser');
 const expect = require('chai');
-const socket = require('socket.io');
 const cors = require('cors');
 const helmet = require('helmet');
 
@@ -63,45 +62,102 @@ const server = app.listen(portNum, () => {
 });
 
 const io = require('socket.io')(server);
-const { createGameState, gameLoop, getUpdatedVelocity } = require('./game.js');
+const { initGame, gameLoop, getUpdatedVelocity } = require('./game.js');
 const { FRAMERATE } = require('./public/constants.js');
+const { makeid } = require('./public/utils.js');
+const state = {};
+const clientRooms = {};
 
-io.on('connection', (client) => {
-  const state = createGameState();
+io.on('connection', client => {
+
   client.on('keydown', handleKeydown);
+  client.on('newGame', handleNewGame);
+  client.on('joinGame', handleJoinGame);
 
+  function handleJoinGame(roomName) {
+    const room = io.sockets.adapter.rooms[roomName];
+
+    let allUsers;
+    if (room) {
+      allUsers = room.sockets;
+    }
+
+    let numClients = 0;
+    if (allUsers) {
+      numClients = Object.keys(allUsers).length;
+    }
+
+    if (numClients === 0) {
+      client.emit('unknownCode');
+      return;
+    } else if (numClients > 1) {
+      client.emit('tooManyPlayers');
+      return;
+    }
+
+    clientRooms[client.id] = roomName;
+
+    client.join(roomName);
+    client.number = 2;
+    client.emit('init', 2);
+    
+    startGameInterval(roomName);
+  }
+
+  function handleNewGame() {
+    let roomName = makeid(5);
+    clientRooms[client.id] = roomName;
+    client.emit('gameCode', roomName);
+
+    state[roomName] = initGame();
+
+    client.join(roomName);
+    client.number = 1;
+    client.emit('init', 1);
+  }
+  
   function handleKeydown(keyCode) {
+    const roomName = clientRooms[client.id];
+    if (!roomName) {
+      return;
+    }
     try {
       keyCode = parseInt(keyCode);
-    } catch (error) {
-      console.log(error)
+    } catch(e) {
+      console.error(e);
       return;
     }
 
     const vel = getUpdatedVelocity(keyCode);
 
     if(vel) {
-      state.player.vel = vel;
+      // how to prevent 180 degree turns?
+      if((state[roomName].players[client.number - 1].vel.x !== 0 && vel.x !== 0) || (state[roomName].players[client.number - 1].vel.y !== 0 && vel.y !== 0)) return;
+      state[roomName].players[client.number - 1].vel = vel;
     }
   }
-
-  startGameInterval(client, state);
 });
 
-function startGameInterval(client, state) {
+function startGameInterval(roomName) {
   const intervalId = setInterval(() => {
-    let lastFrameTime = performance.now();
-    const winner = gameLoop(state); 
+    const winner = gameLoop(state[roomName]);
     
-
-    if(!winner) {
-      client.emit('gameState', JSON.stringify(state));
+    if (!winner) {
+      emitGameState(roomName, state[roomName])
     } else {
-      client.emit('gameOver');
+      emitGameOver(roomName, winner);
+      state[roomName] = null;
       clearInterval(intervalId);
     }
-  }, 2000 / FRAMERATE)
+  }, 1000 / FRAMERATE);
 }
 
+function emitGameState(roomName, state) {
+  io.sockets.in(roomName).emit('gameState', JSON.stringify(state))
+}
+
+function emitGameOver(roomName, winner) {
+  io.sockets.in(roomName).emit('gameOver', JSON.stringify({ winner }))
+}
 
 module.exports = app; // For testing
