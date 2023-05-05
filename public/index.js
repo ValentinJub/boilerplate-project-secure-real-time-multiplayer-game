@@ -3,7 +3,7 @@ const SNAKE_COLOR = '#d42450';
 const SNAKE2_COLOR = '#00ffff';
 const FOOD_COLOR = '#e66916';
 
-const socket = io('http://localhost:3000');
+const socket = io('https://shhnake-valentinwissler42.b4a.run');
 socket.on('init', handleInit);
 socket.on('gameState', handleGameState);
 socket.on('gameOver', handleGameOver);
