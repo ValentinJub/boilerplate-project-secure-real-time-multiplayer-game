@@ -3,13 +3,14 @@ const SNAKE_COLOR = '#d42450';
 const SNAKE2_COLOR = '#00ffff';
 const FOOD_COLOR = '#e66916';
 
-const socket = io('https://shhnake-valentinwissler42.b4a.run');
+const socket = io('http://localhost:3000');
 socket.on('init', handleInit);
 socket.on('gameState', handleGameState);
 socket.on('gameOver', handleGameOver);
 socket.on('gameCode', handleGameCode);
 socket.on('unknownGame', handleUnknownGame);
 socket.on('tooManyPlayers', handleTooManyPlayers);
+socket.on('replay', handleReplay)
 
 
 const gameScreen = document.getElementById('gameScreen');
@@ -18,11 +19,24 @@ const newGameBtn = document.getElementById('newGameButton');
 const joinGameBtn = document.getElementById('joinGameButton');
 const gameCodeInput = document.getElementById('gameCodeInput');
 const gameCodeDisplay = document.getElementById('gameCodeDisplay');
+const gameOverScreen = document.getElementById('gameOverScreen');
+const winningPlayer = document.getElementById('winningPlayer');
+const playAgainBtn = document.getElementById('playAgainButton');
+const returnToLobbyBtn = document.getElementById('returnToLobbyButton');
 let canvas, ctx, playerNumber;
 let gameActive = false;
 
 newGameBtn.addEventListener('click', newGame);
 joinGameBtn.addEventListener('click', joinGame);
+playAgainBtn.addEventListener('click', replay);
+
+function replay() {
+  socket.emit('replay');
+}
+
+function handleReplay() {
+  initCanvas();
+}
 
 function newGame() {
   socket.emit('newGame');
@@ -37,6 +51,7 @@ function joinGame() {
 
 function initCanvas() {
   initialScreen.style.display = 'none';
+  gameOverScreen.style.display = 'none';
   gameScreen.style.display = 'block';
   canvas = document.getElementById('canvas');
   ctx = canvas.getContext('2d');
@@ -92,12 +107,14 @@ function handleGameState(gameState) {
 function handleGameOver(data) {
   if(!gameActive) return;
   data = JSON.parse(data);
-  if(data.winner === playerNumber) {
-    alert('You Win!');
+  if(data.winner == 1) {
+    winningPlayer.innerText = '1';
   } else {
-    alert('You Lose :(');
+    winningPlayer.innerText = '2';
   }
-  gameActive = false;
+  initialScreen.style.display = 'none';
+  gameScreen.style.display = 'none';
+  gameOverScreen.style.display = 'block';
 }
 
 function handleGameCode(code) {
@@ -120,4 +137,5 @@ function reset() {
   gameCodeDisplay.innerText = '';
   initialScreen.style.display = 'block';
   gameScreen.style.display = 'none';
+  gameOverScreen.style.display = 'none';
 }

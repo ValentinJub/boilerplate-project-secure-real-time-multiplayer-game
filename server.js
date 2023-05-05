@@ -73,6 +73,7 @@ io.on('connection', client => {
   client.on('keydown', handleKeydown);
   client.on('newGame', handleNewGame);
   client.on('joinGame', handleJoinGame);
+  client.on('replay', handleReplay);
 
   function handleJoinGame(roomName) {
     const room = io.sockets.adapter.rooms[roomName];
@@ -136,6 +137,16 @@ io.on('connection', client => {
       state[roomName].players[client.number - 1].vel = vel;
     }
   }
+
+  function handleReplay() {
+    const roomName = clientRooms[client.id];
+    if (!roomName) {
+      return;
+    }
+    io.sockets.in(roomName).emit('replay');
+    state[roomName] = initGame();
+    startGameInterval(roomName);
+  }
 });
 
 function startGameInterval(roomName) {
@@ -146,7 +157,6 @@ function startGameInterval(roomName) {
       emitGameState(roomName, state[roomName])
     } else {
       emitGameOver(roomName, winner);
-      // state[roomName] = null;
       clearInterval(intervalId);
     }
   }, 1000 / FRAMERATE);
