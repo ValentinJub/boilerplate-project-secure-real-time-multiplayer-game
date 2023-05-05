@@ -118,7 +118,7 @@ io.on('connection', client => {
   
   function handleKeydown(keyCode) {
     const roomName = clientRooms[client.id];
-    if (!roomName || !state[roomName].players) {
+    if (!roomName) {
       return;
     }
     try {
@@ -146,7 +146,7 @@ function startGameInterval(roomName) {
       emitGameState(roomName, state[roomName])
     } else {
       emitGameOver(roomName, winner);
-      state[roomName] = null;
+      // state[roomName] = null;
       clearInterval(intervalId);
     }
   }, 1000 / FRAMERATE);
