@@ -61,12 +61,12 @@ function paintGame(state) {
   ctx.fillStyle = FOOD_COLOR;
   ctx.fillRect(food.x * size, food.y * size, size, size);
 
-  paintPlayer(state.players[0], size, SNAKE_COLOR);
-  paintPlayer(state.players[1], size, SNAKE2_COLOR);
+  paintPlayer(state.players[0], size, state.color[state.players[0].colorIndex]);
+  paintPlayer(state.players[1], size, state.color[state.players[1].colorIndex]);
 }
 
-function paintPlayer(playerState, size, color) {
-  const snake = playerState.snake;
+function paintPlayer(player, size, color) {
+  const snake = player.snake;
 
   ctx.fillStyle = color;
   for(let cell of snake) {

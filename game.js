@@ -23,6 +23,8 @@ function createGameState() {
         {x: 2, y: 10},
         {x: 3, y: 10},
       ],
+      foodEaten: 0,
+      colorIndex: 0,
     }, {
       pos: {
         x: 18,
@@ -37,10 +39,33 @@ function createGameState() {
         {x: 19, y: 10},
         {x: 18, y: 10},
       ],
+      foodEaten: 0,
+      colorIndex: 0,
     }],
+    color: [
+      '#76C144',
+      '#40BF86',
+      '#3E8EBB',
+      '#473EBB',
+      '#9E3EBB',
+      '#BB3EBB',
+      '#BB3E64',
+      '#BCC144',
+      '#C8E3AB',
+      '#E4F1F6',
+    ],
     food: {},
     gridsize: GRID_SIZE,
   };
+}
+
+function updateColorIndex(player) {
+  if(player.foodEaten % 3 === 0) {
+    player.colorIndex++;
+    if(player.colorIndex > 10) {
+      player.colorIndex = 0;
+    }
+  }
 }
 
 // Create game loop that updates the game state
@@ -74,6 +99,7 @@ function gameLoop(state, indexedFrameRate) {
     playerOne.pos.x += playerOne.vel.x;
     playerOne.pos.y += playerOne.vel.y;
     randomFood(state);
+    updateColorIndex(playerOne);
     indexedFrameRate++;
   }
 
@@ -82,6 +108,7 @@ function gameLoop(state, indexedFrameRate) {
     playerTwo.pos.x += playerTwo.vel.x;
     playerTwo.pos.y += playerTwo.vel.y;
     randomFood(state);
+    updateColorIndex(playerTwo);
     indexedFrameRate++;
   }
   //if playerOne is moving
