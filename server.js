@@ -174,7 +174,7 @@ function startGameInterval(roomName) {
       emitGameState(roomName, state[roomName])
     } else {
       clearInterval(intervalId);
-      intervalOn = false;
+      roomsInUse.splice(roomsInUse.indexOf(roomName), 1);
       emitGameOver(roomName, winner);
     }
   }, 1000 / 10);
