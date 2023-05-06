@@ -68,6 +68,7 @@ const { FRAMERATE } = require('./public/constants.js');
 const { makeid } = require('./public/utils.js');
 const state = {};
 const clientRooms = {};
+const roomsInUse = [];
 
 io.on('connection', client => {
 
@@ -141,12 +142,13 @@ io.on('connection', client => {
   }
 
   function handleReplay() {
-    if(!intervalOn) {
-      intervalOn = true;
-      const roomName = clientRooms[client.id];
-      if (!roomName) {
-        return;
-      }
+    const roomName = clientRooms[client.id];
+    if (!roomName) {
+      return;
+    }
+    //prevents multiple intervals from being created
+    if(!roomsInUse.includes(roomName)) {
+      roomsInUse.push(roomName);
       io.sockets.in(roomName).emit('replay');
       state[roomName] = initGame();
       startGameInterval(roomName);
