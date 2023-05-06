@@ -1,18 +1,56 @@
 body {
   margin: 20px;
+  background-color: #87CEFA;
+  animation: color-change 360s ease-in-out infinite alternate;
 }
+
+#scores {
+  background-color: #d0d0d5;
+  padding: 10px;
+  margin: 10px;
+  font-size: large;
+  border-radius: 10px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+}
+
+@keyframes color-change {
+  0% {
+    background-color: #87CEFA;
+  }
+  100% {
+    background-color: #4B0082;
+  }
+}
+
+@-webkit-keyframes color-change {
+  0% {
+    background-color: #87CEFA;
+  }
+  100% {
+    background-color: #4B0082;
+  }
+}
+
+@-moz-keyframes color-change {
+  0% {
+    background-color: #87CEFA;
+  }
+  100% {
+    background-color: #4B0082;
+  }
+}
+
+@-o-keyframes color-change {
+  0% {
+    background-color: #87CEFA;
+  }
+  100% {
+    background-color: #4B0082;
+  }
+} 
 
 code {
   background: #d0d0d5;
-}
-
-canvas {
-  margin: auto;
-}
-
-.container {
-  display: flex;
-  flex-direction: column;
 }
 
 @media (min-width: 800px) {

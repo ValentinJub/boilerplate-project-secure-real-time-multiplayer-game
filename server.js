@@ -9,6 +9,7 @@ const fccTestingRoutes = require('./routes/fcctesting.js');
 const runner = require('./test-runner.js');
 
 const app = express();
+var intervalOn = false; 
 
 app.use(helmet({
   noSniff: true,
@@ -74,6 +75,7 @@ io.on('connection', client => {
   client.on('newGame', handleNewGame);
   client.on('joinGame', handleJoinGame);
   client.on('replay', handleReplay);
+  client.on('countDown', handleCountDown);
 
   function handleJoinGame(roomName) {
     const room = io.sockets.adapter.rooms[roomName];
@@ -139,27 +141,41 @@ io.on('connection', client => {
   }
 
   function handleReplay() {
+    if(!intervalOn) {
+      intervalOn = true;
+      const roomName = clientRooms[client.id];
+      if (!roomName) {
+        return;
+      }
+      io.sockets.in(roomName).emit('replay');
+      state[roomName] = initGame();
+      startGameInterval(roomName);
+    }
+  }
+
+  function handleCountDown() {
     const roomName = clientRooms[client.id];
     if (!roomName) {
       return;
     }
-    io.sockets.in(roomName).emit('replay');
-    state[roomName] = initGame();
-    startGameInterval(roomName);
+    io.sockets.in(roomName).emit('countDown');
   }
 });
 
 function startGameInterval(roomName) {
+  let count = 0;
   const intervalId = setInterval(() => {
     const winner = gameLoop(state[roomName]);
-    
+    console.log(count)
+    count++;
     if (!winner) {
       emitGameState(roomName, state[roomName])
     } else {
-      emitGameOver(roomName, winner);
       clearInterval(intervalId);
+      intervalOn = false;
+      emitGameOver(roomName, winner);
     }
-  }, 1000 / FRAMERATE);
+  }, 1000 / 10);
 }
 
 function emitGameState(roomName, state) {

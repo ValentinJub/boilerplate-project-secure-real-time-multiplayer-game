@@ -60,6 +60,7 @@ function createGameState() {
 }
 
 function updateColorIndex(player) {
+  player.foodEaten++;
   if(player.foodEaten % 3 === 0) {
     player.colorIndex++;
     if(player.colorIndex > 10) {
@@ -69,7 +70,7 @@ function updateColorIndex(player) {
 }
 
 // Create game loop that updates the game state
-function gameLoop(state, indexedFrameRate) {
+function gameLoop(state) {
   if(!state) return;
   
   //we define playerOne
@@ -100,7 +101,6 @@ function gameLoop(state, indexedFrameRate) {
     playerOne.pos.y += playerOne.vel.y;
     randomFood(state);
     updateColorIndex(playerOne);
-    indexedFrameRate++;
   }
 
   if(state.food.x === playerTwo.pos.x && state.food.y === playerTwo.pos.y) {
@@ -109,7 +109,6 @@ function gameLoop(state, indexedFrameRate) {
     playerTwo.pos.y += playerTwo.vel.y;
     randomFood(state);
     updateColorIndex(playerTwo);
-    indexedFrameRate++;
   }
   //if playerOne is moving
   if(playerOne.vel.x || playerOne.vel.y) {
